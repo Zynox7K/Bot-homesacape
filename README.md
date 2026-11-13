@@ -245,7 +245,7 @@ puis **Synchroniser la configuration** dans l'application (ou laissez
 cd bot-engine
 python -m venv .venv && source .venv/bin/activate
 pip install -r requirements-dev.txt
-python -m pytest tests                      # 117 tests
+python -m pytest tests                      # 119 tests
 python tools/analyze_file.py capture.png --show-board --debug annotated.png
 python tools/capture_template.py capture.png --row 4 --col 2 --kind bomb
 ```

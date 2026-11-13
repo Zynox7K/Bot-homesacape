@@ -1,11 +1,13 @@
 """API HTTP du moteur.
 
-Trois points d'entrée utiles au quotidien :
+Les points d'entrée utiles au quotidien :
 
 * ``GET  /health``  — sonde de vie (utilisée par Render/Railway et par l'app) ;
 * ``POST /analyze`` — capture d'écran en entrée, geste à jouer en sortie ;
-* ``GET  /config`` / ``POST /admin/config`` — lecture et synchronisation à chaud de
-  la configuration versionnée sur le dépôt GitHub.
+* ``GET  /config`` / ``POST /config`` — lecture et synchronisation à chaud de la
+  configuration versionnée sur le dépôt GitHub (écriture protégée par
+  ``X-Engine-Key``) ;
+* ``POST /config/reload`` — rechargement du fichier depuis le disque.
 
 L'analyse est coûteuse en CPU : elle est systématiquement exécutée dans le pool de
 threads pour ne jamais bloquer la boucle événementielle.
