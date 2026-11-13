@@ -64,7 +64,7 @@ class FloatingOverlayService : Service(), BubbleView.Callbacks {
 
     @Volatile private var playing = false
     @Volatile private var settleMs = DEFAULT_SETTLE_MS
-    @Volatile private var serverIntervalMs = MIN_STEP_MS
+    @Volatile private var serverIntervalMs = SettingsRepository.MIN_CAPTURE_INTERVAL_MS.toLong()
 
     private var sessionId = UUID.randomUUID().toString()
     private var offGameLogged = false
@@ -237,7 +237,7 @@ class FloatingOverlayService : Service(), BubbleView.Callbacks {
             playing = true
             sessionId = UUID.randomUUID().toString()
             settleMs = DEFAULT_SETTLE_MS
-            serverIntervalMs = MIN_STEP_MS
+            serverIntervalMs = SettingsRepository.MIN_CAPTURE_INTERVAL_MS.toLong()
             lastGridDescription = ""
             offGameLogged = false
             staleLogged = false
@@ -344,8 +344,8 @@ class FloatingOverlayService : Service(), BubbleView.Callbacks {
             val elapsed = SystemClock.elapsedRealtime() - startedAt
             val pause = maxOf(
                 settings.captureIntervalMs.toLong(),
-                settleMs.toLong(),
-                serverIntervalMs.toLong(),
+                settleMs,
+                serverIntervalMs,
             ).coerceAtLeast(MIN_STEP_MS) - elapsed
             RuntimeBus.update { it.copy(state = BotState.WAITING) }
             syncBubble()
@@ -403,8 +403,8 @@ class FloatingOverlayService : Service(), BubbleView.Callbacks {
         }
 
         val roundTrip = SystemClock.elapsedRealtime() - sentAt
-        settleMs = analysis.settleMs
-        serverIntervalMs = analysis.captureIntervalMs
+        settleMs = analysis.settleMs.toLong()
+        serverIntervalMs = analysis.captureIntervalMs.toLong()
         reportAnalysis(analysis, roundTrip)
 
         if (!analysis.ok) {
@@ -675,7 +675,7 @@ class FloatingOverlayService : Service(), BubbleView.Callbacks {
         private const val GESTURE_TIMEOUT_MS = 5_000L
         private const val MIN_GESTURE_MS = 40L
         private const val MAX_GESTURE_MS = 2_000L
-        private const val DEFAULT_SETTLE_MS = 1_250
+        private const val DEFAULT_SETTLE_MS = 1_250L
         private const val MAX_CONSECUTIVE_FAILURES = 5
         private const val WAKE_LOCK_TAG = "autoplay::pilot"
         private const val WAKE_LOCK_TIMEOUT_MS = 4 * 60 * 60 * 1000L

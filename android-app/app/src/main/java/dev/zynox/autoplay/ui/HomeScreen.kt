@@ -906,7 +906,7 @@ private fun LogCard(entries: List<LogEntry>, onClear: () -> Unit) {
                 style = MaterialTheme.typography.bodySmall,
                 color = TextSecondary,
             )
-            return@sectionCard
+            return@SectionCard
         }
 
         Column(verticalArrangement = Arrangement.spacedBy(4.dp)) {
