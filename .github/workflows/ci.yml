@@ -24,9 +24,14 @@ jobs:
           set +e
           ./gradlew testDebugUnitTest assembleDebug > "$RUNNER_TEMP/build.log" 2>&1
           result=$?
+          for report in app/build/test-results/testDebugUnitTest/TEST-*.xml; do
+            if [ -f "$report" ]; then
+              python3 -c 'import sys,xml.etree.ElementTree as E; root=E.parse(sys.argv[1]); [print("e: TEST " + c.get("name", "?") + ": " + (c.find("failure").get("message", "failure") if c.find("failure") is not None else "")) for c in root.findall(".//testcase") if c.find("failure") is not None]' "$report" >> "$RUNNER_TEMP/build.log"
+            fi
+          done
           cat "$RUNNER_TEMP/build.log"
           echo "status=$result" >> "$GITHUB_OUTPUT"
-          mapfile -t diagnostics < <(grep -E '^e: |^\* What went wrong:|^> |^FAILURE:|^Execution failed|^Could not' "$RUNNER_TEMP/build.log" | grep -v '^> Task' | head -5)
+          mapfile -t diagnostics < <({ grep '^e: ' "$RUNNER_TEMP/build.log"; grep -E '^\* What went wrong:|^> |^FAILURE:|^Execution failed|^Could not' "$RUNNER_TEMP/build.log" | grep -v '^> Task'; } | head -5)
           for i in 0 1 2 3 4; do
             line="${diagnostics[$i]:-OK}"
             echo "d$i=${line:0:250}" >> "$GITHUB_OUTPUT"

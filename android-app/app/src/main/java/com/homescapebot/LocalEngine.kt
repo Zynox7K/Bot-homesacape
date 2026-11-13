@@ -69,7 +69,7 @@ object LocalEngine {
             if (hue < 0) hue += 6f
             val bin = (hue / 6f * BINS).toInt().coerceIn(0, BINS - 1)
             // Smooth across hue-bin boundaries, including red across 0/360.
-            bins[bin] += .6f; bins[(bin + BINS - 1) % BINS] += .2f; bins[(bin + 1) % BINS] += .2f
+            bins[bin] += .5f; bins[(bin + BINS - 1) % BINS] += .25f; bins[(bin + 1) % BINS] += .25f
             count++
         }
         if (count < 8) return null
@@ -82,7 +82,7 @@ object LocalEngine {
     fun classify(sample: FloatArray?, templates: List<FloatArray>): Int? {
         if (sample == null || templates.size < 2) return null
         val scores = templates.mapIndexed { i, template -> i to similarity(sample, template) }.sortedByDescending { it.second }
-        return if (scores[0].second >= .55f && scores[0].second - scores[1].second >= .12f) scores[0].first else null
+        return if (scores[0].second >= .48f && scores[0].second - scores[1].second >= .12f) scores[0].first else null
     }
 
     fun sample(bitmap: Bitmap, config: Calibration, row: Int, col: Int): FloatArray? {
