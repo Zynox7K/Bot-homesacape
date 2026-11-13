@@ -30,7 +30,19 @@ jobs:
           pip install -r requirements-dev.txt
 
       - name: Suite de tests
-        run: python -m pytest tests
+        run: |
+          python -m pytest tests 2>&1 | tee /tmp/pytest.log
+          exit "${PIPESTATUS[0]}"
+
+      - name: Diagnostic des tests
+        if: failure()
+        run: |
+          [ -f /tmp/pytest.log ] || exit 0
+          rapport=$( { grep -E "^_{5,} test|^FAILED |^ERROR |^E   " /tmp/pytest.log || true; } \
+            | tail -n 90 \
+            | sed -e 's/%/%25/g' -e 's/\r//g' \
+            | awk '{ printf "%s%%0A", $0 }')
+          echo "::error title=Tests du moteur::${rapport}"
 
       - name: Démarrage réel du service
         run: |
