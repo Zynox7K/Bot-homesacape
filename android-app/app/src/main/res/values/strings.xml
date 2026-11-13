@@ -1,4 +1,4 @@
 <resources>
     <string name="app_name">Bot local</string>
-    <string name="accessibility_description">Capture l'écran et effectue des gestes uniquement lorsque vous activez la lecture dans la bulle.</string>
+    <string name="accessibility_description">Capture l\'écran et effectue des gestes uniquement lorsque vous activez la lecture dans la bulle.</string>
 </resources>
