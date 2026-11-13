@@ -1,0 +1,50 @@
+name: Moteur — tests
+
+on:
+  push:
+    branches: ["**"]
+  pull_request:
+  workflow_dispatch:
+
+jobs:
+  pytest:
+    name: pytest · Python 3.12
+    runs-on: ubuntu-latest
+    defaults:
+      run:
+        working-directory: bot-engine
+    steps:
+      - name: Extraction du dépôt
+        uses: actions/checkout@v4
+
+      - name: Python
+        uses: actions/setup-python@v5
+        with:
+          python-version: "3.12"
+          cache: pip
+          cache-dependency-path: bot-engine/requirements-dev.txt
+
+      - name: Dépendances
+        run: |
+          python -m pip install --upgrade pip
+          pip install -r requirements-dev.txt
+
+      - name: Suite de tests
+        run: python -m pytest tests
+
+      - name: Démarrage réel du service
+        run: |
+          python -m uvicorn engine.api.main:app --host 127.0.0.1 --port 8123 &
+          serveur=$!
+          for _ in $(seq 1 40); do
+            if curl -sf http://127.0.0.1:8123/health > /tmp/health.json; then break; fi
+            sleep 1
+          done
+          cat /tmp/health.json
+          grep -q '"status":"ok"' /tmp/health.json
+          kill "$serveur"
+
+      - name: Analyse d'une capture de référence
+        run: |
+          python -c "import sys; sys.path.insert(0, 'tests'); import cv2; from synthetic import build_level; cv2.imwrite('/tmp/reference.png', build_level(rows=8, cols=8, colors=5, seed=7).image)"
+          python tools/analyze_file.py /tmp/reference.png --mode balanced --show-board

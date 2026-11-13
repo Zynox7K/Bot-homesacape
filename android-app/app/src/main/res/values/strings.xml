@@ -1,0 +1,167 @@
+<?xml version="1.0" encoding="utf-8"?>
+<resources>
+
+    <!-- Application -->
+    <string name="app_name">AutoPlay</string>
+    <string name="app_tagline">Pilote automatique — calcul à distance</string>
+    <string name="app_intro">Le téléphone ne calcule rien : il capture l\'écran, interroge votre moteur distant et joue le geste reçu.</string>
+
+    <!-- Service d'accessibilité -->
+    <string name="accessibility_service_label">AutoPlay</string>
+    <string name="service_description">Permet à AutoPlay de capturer l\'écran du jeu et d\'exécuter les déplacements décidés par le moteur distant. Rien n\'est analysé sur le téléphone.</string>
+
+    <!-- Moteur -->
+    <string name="engine_title">Moteur de calcul</string>
+    <string name="engine_subtitle">Adresse du service qui reconnaît la grille et choisit les coups.</string>
+    <string name="engine_url_label">Adresse du moteur</string>
+    <string name="engine_url_hint">https://autoplay-engine.onrender.com</string>
+    <string name="engine_test">Tester la connexion</string>
+    <string name="engine_state_unknown">Connexion jamais testée.</string>
+    <string name="engine_state_ok">Connecté · version %1$s · mode %2$s · %3$d ms</string>
+    <string name="engine_state_error">Échec : %1$s</string>
+    <string name="engine_state_testing">Test en cours…</string>
+    <string name="engine_state_details">%1$d gabarit(s) de bonus · serveur actif depuis %2$.0f s</string>
+
+    <!-- Dépôt GitHub -->
+    <string name="github_title">Dépôt GitHub</string>
+    <string name="github_subtitle">Les réglages du moteur sont versionnés sur votre dépôt : l\'application les récupère et les applique.</string>
+    <string name="github_repo_label">Dépôt</string>
+    <string name="github_repo_hint">https://github.com/utilisateur/Bot-homesacape</string>
+    <string name="github_token_label">Jeton d\'accès (dépôt privé)</string>
+    <string name="github_token_hint">Laisser vide pour un dépôt public</string>
+    <string name="github_admin_label">Clé d\'administration du moteur</string>
+    <string name="github_admin_hint">Valeur de AUTOPLAY_ADMIN_KEY sur le serveur</string>
+    <string name="github_sync">Synchroniser la configuration</string>
+    <string name="github_sync_running">Récupération depuis GitHub…</string>
+    <string name="github_sync_pushed">Configuration appliquée sur le moteur · mode %1$s</string>
+    <string name="github_sync_stored">Configuration récupérée · elle sera envoyée à chaque analyse (clé d\'administration absente)</string>
+    <string name="github_sync_error">Échec : %1$s</string>
+    <string name="github_push_failed">Écriture refusée par le moteur (%1$s) : la configuration sera envoyée à chaque analyse.</string>
+    <string name="github_autosync">Synchroniser au démarrage du pilote</string>
+    <string name="github_repo_invalid">URL de dépôt invalide : attendez-vous à https://github.com/proprietaire/depot</string>
+
+    <!-- Autorisations -->
+    <string name="permissions_title">Autorisations</string>
+    <string name="permissions_subtitle">Trois autorisations sont nécessaires, aucune donnée n\'est collectée.</string>
+    <string name="permission_accessibility_title">Service d\'accessibilité</string>
+    <string name="permission_accessibility_detail">Capture d\'écran et gestes tactiles à votre place.</string>
+    <string name="permission_overlay_title">Affichage par-dessus d\'autres applications</string>
+    <string name="permission_overlay_detail">Télécommande flottante visible pendant le jeu.</string>
+    <string name="permission_notifications_title">Notifications</string>
+    <string name="permission_notifications_detail">Maintient le pilote actif et affiche les commandes.</string>
+    <string name="permission_action_enable">Activer</string>
+    <string name="permission_action_grant">Autoriser</string>
+    <string name="permission_state_ready">Activée</string>
+    <string name="permission_accessibility_hint">Dans les réglages, ouvrez « Services installés », puis « AutoPlay », et activez-le.</string>
+
+    <!-- Pilotage -->
+    <string name="control_title">Pilotage</string>
+    <string name="control_start">Démarrer l\'assistant</string>
+    <string name="control_stop">Arrêter le service</string>
+    <string name="control_pause">Mettre en pause</string>
+    <string name="control_resume">Reprendre</string>
+    <string name="control_running_hint">Ouvrez un niveau du jeu, puis appuyez sur la bulle flottante pour lancer le pilote.</string>
+    <string name="control_state">État</string>
+    <string name="control_moves">Coups joués</string>
+    <string name="control_last_move">Dernier coup</string>
+    <string name="control_score">Score retenu</string>
+    <string name="control_roundtrip">Aller-retour</string>
+    <string name="control_grid">Grille</string>
+    <string name="control_engine">Moteur</string>
+    <string name="control_none">—</string>
+
+    <!-- Réglages -->
+    <string name="settings_title">Réglages</string>
+    <string name="settings_mode">Profondeur de calcul</string>
+    <string name="settings_mode_fast">Rapide</string>
+    <string name="settings_mode_balanced">Équilibré</string>
+    <string name="settings_mode_expert">Expert</string>
+    <string name="settings_mode_hint_fast">Réagit vite, suffisant pour les niveaux simples.</string>
+    <string name="settings_mode_hint_balanced">Compromis entre vitesse et qualité de jeu.</string>
+    <string name="settings_mode_hint_expert">Cherche plus loin : recommandé pour les niveaux difficiles.</string>
+    <string name="settings_interval">Intervalle entre deux captures</string>
+    <string name="settings_interval_hint">Android limite la capture d\'écran à une par seconde.</string>
+    <string name="settings_quality">Qualité de la capture envoyée</string>
+    <string name="settings_quality_hint">Plus la qualité baisse, plus l\'envoi est rapide.</string>
+    <string name="settings_width">Largeur d\'analyse</string>
+    <string name="settings_gesture">Durée des gestes</string>
+    <string name="settings_goal_color">Couleur prioritaire</string>
+    <string name="settings_goal_auto">Automatique</string>
+    <string name="settings_goal_change">Suivante</string>
+    <string name="settings_target_package">Application surveillée</string>
+    <string name="settings_pause_off_game">Pause quand le jeu n\'est pas au premier plan</string>
+    <string name="settings_dry_run">Analyse seule (aucun geste exécuté)</string>
+    <string name="settings_dry_run_hint">Utile pour vérifier la détection sans laisser le pilote jouer.</string>
+    <string name="settings_timeout">Délai maximal d\'une analyse</string>
+
+    <!-- Journal -->
+    <string name="log_title">Journal</string>
+    <string name="log_clear">Vider</string>
+    <string name="log_empty">Le journal est vide.</string>
+
+    <!-- Bulle flottante -->
+    <string name="bubble_hint">Appui : lecture / pause · Appui long : réglages · Glisser : déplacer</string>
+
+    <!-- Notification -->
+    <string name="notif_channel_name">Pilotage</string>
+    <string name="notif_channel_description">État du pilote automatique et commandes rapides.</string>
+    <string name="notif_idle">AutoPlay en veille</string>
+    <string name="notif_playing">AutoPlay joue</string>
+    <string name="notif_paused">AutoPlay en pause</string>
+    <string name="notif_error">AutoPlay rencontre un problème</string>
+    <string name="notif_detail">%1$s · %2$d coup(s)</string>
+    <string name="notif_action_toggle">Lecture / Pause</string>
+    <string name="notif_action_stop">Arrêter</string>
+
+    <!-- États du pilote -->
+    <string name="state_idle">En veille</string>
+    <string name="state_capturing">Capture de l\'écran</string>
+    <string name="state_thinking">Calcul sur le moteur</string>
+    <string name="state_playing">Geste en cours</string>
+    <string name="state_waiting">Stabilisation</string>
+    <string name="state_paused">En pause</string>
+    <string name="state_error">Erreur</string>
+    <string name="state_stopped">Arrêté</string>
+    <string name="state_dry_run">Analyse seule</string>
+
+    <!-- Messages d'erreur et de journal -->
+    <string name="error_accessibility_missing">Activez d\'abord le service d\'accessibilité AutoPlay.</string>
+    <string name="error_overlay_missing">Autorisez l\'affichage par-dessus d\'autres applications.</string>
+    <string name="error_engine_missing">Renseignez l\'adresse du moteur de calcul.</string>
+    <string name="error_capture_failed">Capture d\'écran refusée par le système.</string>
+    <string name="error_no_board">Grille non reconnue : ouvrez un niveau, puis relancez.</string>
+    <string name="error_no_move">Aucun coup disponible sur ce plateau.</string>
+    <string name="error_engine_failed">Analyse refusée par le moteur : %1$s</string>
+    <string name="error_network">Moteur injoignable : %1$s</string>
+    <string name="error_gesture_failed">Le système a refusé le geste.</string>
+    <string name="error_stopped_after_failures">Pilote arrêté après %1$d échecs consécutifs.</string>
+    <string name="log_paused_off_game">Pause : le jeu n\'est pas au premier plan.</string>
+    <string name="log_resumed_in_game">Reprise : le jeu est revenu au premier plan.</string>
+    <string name="log_service_started">Service démarré.</string>
+    <string name="log_accessibility_connected">Service d\'accessibilité connecté.</string>
+    <string name="log_accessibility_disconnected">Service d\'accessibilité déconnecté.</string>
+    <string name="log_screenshot_failed">Capture d\'écran refusée par le système (code %1$d).</string>
+    <string name="log_overlay_denied">Superposition refusée : le service s\'arrête.</string>
+    <string name="log_overlay_failed">Superposition impossible : %1$s</string>
+    <string name="log_notifications_denied">Notifications refusées : le pilote tourne sans notification permanente.</string>
+    <string name="log_analysis_summary">Grille %1$d × %2$d · %3$d pièce(s) · %4$d obstacle(s) · %5$d bonus · aller-retour %6$d ms</string>
+    <string name="log_stale_session">Le moteur voit un plateau inchangé : vérifiez que le niveau est bien affiché.</string>
+    <string name="log_service_stopped">Service arrêté.</string>
+    <string name="log_move_played">Coup joué · %1$s</string>
+    <string name="log_dry_run_move">Analyse seule · %1$s</string>
+    <string name="log_started_playing">Pilote lancé.</string>
+    <string name="log_paused">Pilote en pause.</string>
+
+    <!-- Formats -->
+    <string name="format_ms">%1$d ms</string>
+    <string name="format_seconds">%1$.1f s</string>
+    <string name="format_percent">%1$d %%</string>
+    <string name="format_pixels">%1$d px</string>
+    <string name="format_scale">×%1$.1f</string>
+    <string name="format_grid">%1$d × %2$d</string>
+    <string name="format_score">%1$.2f</string>
+    <string name="format_moves">%1$d</string>
+    <string name="format_goal_color">indice %1$d de la palette du moteur</string>
+    <string name="format_confidence">fiabilité %1$.0f %%</string>
+
+</resources>
