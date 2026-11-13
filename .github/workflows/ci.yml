@@ -26,9 +26,20 @@ jobs:
           result=$?
           cat "$RUNNER_TEMP/build.log"
           echo "status=$result" >> "$GITHUB_OUTPUT"
-          diagnostic=$(grep -E '^e:|^\* What went wrong:|^> |^FAILURE:|^Execution failed|^Could not' "$RUNNER_TEMP/build.log" | head -5 | tr '\n' '|' | cut -c1-230)
-          echo "diagnostic=${diagnostic:-Build OK}" >> "$GITHUB_OUTPUT"
-      - name: 'Résultat : ${{ steps.build.outputs.diagnostic }}'
+          mapfile -t diagnostics < <(grep -E '^e: |^\* What went wrong:|^> |^FAILURE:|^Execution failed|^Could not' "$RUNNER_TEMP/build.log" | grep -v '^> Task' | head -5)
+          for i in 0 1 2 3 4; do
+            line="${diagnostics[$i]:-OK}"
+            echo "d$i=${line:0:250}" >> "$GITHUB_OUTPUT"
+          done
+      - name: 'Diagnostic 1 - ${{ steps.build.outputs.d0 }}'
+        run: echo 'Build diagnostic'
+      - name: 'Diagnostic 2 - ${{ steps.build.outputs.d1 }}'
+        run: echo 'Build diagnostic'
+      - name: 'Diagnostic 3 - ${{ steps.build.outputs.d2 }}'
+        run: echo 'Build diagnostic'
+      - name: 'Diagnostic 4 - ${{ steps.build.outputs.d3 }}'
+        run: echo 'Build diagnostic'
+      - name: 'Diagnostic 5 - ${{ steps.build.outputs.d4 }}'
         run: exit "${{ steps.build.outputs.status }}"
       - uses: actions/upload-artifact@v4
         with:
