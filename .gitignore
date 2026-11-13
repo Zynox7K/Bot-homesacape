@@ -1,0 +1,8 @@
+.gradle/
+**/build/
+local.properties
+*.aab
+.idea/
+.venv/
+*.py[cod]
+.env
