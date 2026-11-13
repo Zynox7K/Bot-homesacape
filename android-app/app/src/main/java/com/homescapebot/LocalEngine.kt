@@ -73,7 +73,7 @@ object LocalEngine {
             count++
         }
         if (count < 8) return null
-        for (i in bins.indices) bins[i] /= count
+        for (i in bins.indices) bins[i] = bins[i] / count.toFloat()
         return bins
     }
 
