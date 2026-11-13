@@ -1,8 +1,39 @@
+# Gradle / Android
 .gradle/
-**/build/
+build/
+app/build/
 local.properties
-*.aab
+captures/
+.externalNativeBuild/
+.cxx/
+
+# Android Studio / IntelliJ
 .idea/
-.venv/
+*.iml
+.DS_Store
+
+# Clés de signature (ne jamais versionner)
+*.jks
+*.keystore
+
+# Python
+__pycache__/
 *.py[cod]
+.pytest_cache/
+.ruff_cache/
+.mypy_cache/
+venv/
+.venv/
+env/
+*.egg-info/
+
+# Environnement et secrets locaux
 .env
+.env.*
+!.env.example
+
+# Sorties locales
+dist/
+*.apk
+*.aab
+*.log

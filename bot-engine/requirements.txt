@@ -1,0 +1,9 @@
+# Versions validées en continu par la suite de tests (workflow engine-tests).
+# Fourchettes volontaires : elles permettent à pip de résoudre des roues binaires
+# disponibles pour la version de Python et la plateforme cibles.
+fastapi>=0.115,<1.0
+uvicorn[standard]>=0.30,<1.0
+python-multipart>=0.0.9,<1.0
+pydantic>=2.7,<3.0
+numpy>=1.26,<3.0
+opencv-python-headless>=4.9,<6.0
