@@ -65,9 +65,17 @@ def parse(lines: list[str], palette_size: int = 6) -> Board:
 
 
 def solver_config(**overrides) -> SolverConfig:
+    """Réglages de test : recherche complète, sans borne de temps.
+
+    La borne ``time_budget_ms`` est une soupape de production : la laisser active
+    ferait dépendre le coup retenu de la vitesse de la machine et rendrait les
+    assertions intermittentes. Les tests qui la vérifient la passent
+    explicitement (voir ``test_time_budget_is_respected``).
+    """
     config = EngineConfig.load().solver
     payload = config.__dict__.copy()
     payload.pop("weights", None)
+    payload["time_budget_ms"] = 0
     payload.update(overrides)
     return SolverConfig(weights=config.weights, **payload)
 
@@ -380,6 +388,24 @@ def test_best_move_is_deterministic() -> None:
     assert first is not None and second is not None
     assert (first.from_index, first.to_index) == (second.from_index, second.to_index)
     assert first.score == pytest.approx(second.score)
+
+
+def test_best_move_is_reproducible_under_a_truncated_search() -> None:
+    """Une borne de temps tronque la recherche sans jamais la rendre invalide.
+
+    Le premier candidat est toujours évalué avant le contrôle de la borne : même
+    interrompue, la recherche renvoie un échange légal, et deux appels avec la
+    même borne nulle donnent exactement le même coup.
+    """
+    board = random_board(seed=9)
+    truncated = best_move(board, solver_config(time_budget_ms=1))
+    complete = best_move(board, solver_config())
+    assert truncated is not None and complete is not None
+    assert (truncated.from_index, truncated.to_index) in swap_candidates(board)
+
+    again = best_move(board, solver_config())
+    assert (again.from_index, again.to_index) == (complete.from_index, complete.to_index)
+    assert again.score == pytest.approx(complete.score)
 
 
 def test_best_move_never_returns_an_illegal_swap() -> None:

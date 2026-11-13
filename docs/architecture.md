@@ -13,7 +13,7 @@ versionné, `bot-engine/config.json`. L'application le récupère via l'API GitH
 l'applique : un `git push` change le comportement du bot sans reconstruire l'APK.
 
 **Aucun code d'approximation.** Pas de fonction simulée, pas de `TODO`, pas de
-branche morte. Chaque étape est testée : 119 tests couvrent la configuration, le
+branche morte. Chaque étape est testée : 120 tests couvrent la configuration, le
 solveur, la vision, le pipeline complet et l'API HTTP.
 
 ## Découpage
@@ -146,13 +146,21 @@ avec bruit, flou et décalage de teinte — c'est ce que vérifient les tests.
 
 ### Solveur
 
-Deux passes, pour rester dans un budget de temps fixe :
+Deux passes :
 
 1. `rank_moves` évalue tous les échanges légaux par simulation déterministe
    (alignements, cascades, gravité, création et déclenchement de bonus,
    combinaisons de bonus).
 2. Les `candidates` meilleurs sont repris par des tirages de Monte-Carlo
    (`playouts`), moyennés, puis combinés au score déterministe à 0,75 / 0,25.
+
+La seconde passe est plafonnée par `time_budget_ms` : dès la borne atteinte, les
+candidats restants ne sont pas tirés et le meilleur coup déjà évalué est joué. Le
+premier candidat est toujours évalué, donc un échange légal est toujours renvoyé.
+C'est ce qui tient la latence (400 ms en `expert`, mesurée à ~100 ms sur un 9 × 9) ;
+en contrepartie le coup retenu dépend de la vitesse de la machine, raison pour
+laquelle les tests de solveur désactivent la borne (`time_budget_ms: 0` = recherche
+complète) et vérifient le plafonnement à part.
 
 La gravité traite les trous et les obstacles intacts comme des solides qui
 segmentent les colonnes : une pièce ne tombe pas à travers une caisse. Le rechargement

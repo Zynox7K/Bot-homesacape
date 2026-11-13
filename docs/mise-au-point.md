@@ -12,7 +12,7 @@ cd bot-engine
 python3 -m venv .venv
 source .venv/bin/activate
 pip install -r requirements-dev.txt      # moteur + pytest + httpx
-python -m pytest tests                   # 119 tests, ~15 s
+python -m pytest tests                   # 120 tests, ~15 s
 ```
 
 Python 3.11 ou 3.12. `opencv-python-headless` suffit : aucune dépendance à X11,
@@ -161,6 +161,10 @@ Section `solver` :
 | Clé              | Défaut     | Effet                                                     |
 | ---------------- | ---------- | --------------------------------------------------------- |
 | `mode`           | `expert`   | `fast` 8 candidats/1 tirage, `balanced` 14/6, `expert` 24/16 |
+| `candidates`     | 24         | nombre d'échanges repris en seconde passe                 |
+| `playouts`       | 16         | tirages de Monte-Carlo par candidat (`1` = passe déterministe seule) |
+| `cascade_depth`  | 8          | profondeur de simulation des cascades                     |
+| `time_budget_ms` | 400        | plafond de la seconde passe ; `0` = recherche complète    |
 | `goal_color`     | -1         | couleur prioritaire (×2,2 sur son poids)                  |
 | `position_bias`  | 0,04       | léger biais vers le centre du plateau                     |
 | `random_seed`    | 20240117   | graine des tirages : résultats reproductibles             |
@@ -185,6 +189,7 @@ un paramètre, retirez-le du fichier.
 | Bonus non reconnus                           | aucun gabarit dans `templates/`                               | créez-les avec `capture_template.py`                                  |
 | Faux bonus sur des pièces brillantes         | seuil d'étalement de teinte trop bas                          | remontez `special_hue_spread_deg` ou `template_threshold`             |
 | Analyse lente (> 1 s)                        | mode `expert`, image trop grande                              | passez en `balanced`, réduisez `analysis_width`                       |
+| Coup différent d'une machine à l'autre       | la borne `time_budget_ms` est atteinte, la seconde passe est tronquée | remontez la borne ou mettez `time_budget_ms: 0` pour une recherche complète |
 | `Plateau inchangé depuis la dernière analyse` | le niveau n'a pas bougé entre deux captures                  | normal : le `session_id` est stable et la grille identique            |
 
 Chaque correctif se valide de la même façon :

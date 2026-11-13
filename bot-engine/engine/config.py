@@ -120,6 +120,7 @@ class SolverConfig:
     candidates: int = 20
     playouts: int = 12
     cascade_depth: int = 7
+    #: Plafond de la seconde passe, en millisecondes ; ``0`` = recherche complète.
     time_budget_ms: int = 300
     goal_color: int = -1
     position_bias: float = 0.04

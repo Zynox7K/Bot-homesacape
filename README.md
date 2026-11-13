@@ -67,7 +67,7 @@ bot-engine/           Moteur Python : FastAPI, OpenCV, solveur match-3
   engine/solver/      board, matching, simulate, search
   engine/api/         API HTTP
   engine/config.py    Configuration versionnée (config.json)
-  tests/              119 tests (unitaires, vision, pipeline complet, API)
+  tests/              120 tests (unitaires, vision, pipeline complet, API)
   tools/              analyze_file.py, capture_template.py
   templates/          Gabarits PNG des bonus (versionnés)
   Dockerfile          Image de déploiement
@@ -245,7 +245,7 @@ puis **Synchroniser la configuration** dans l'application (ou laissez
 cd bot-engine
 python -m venv .venv && source .venv/bin/activate
 pip install -r requirements-dev.txt
-python -m pytest tests                      # 119 tests
+python -m pytest tests                      # 120 tests
 python tools/analyze_file.py capture.png --show-board --debug annotated.png
 python tools/capture_template.py capture.png --row 4 --col 2 --kind bomb
 ```

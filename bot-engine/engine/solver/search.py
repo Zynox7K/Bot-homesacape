@@ -147,7 +147,14 @@ def evaluate_playouts(
 
 
 def best_move(board: Board, config: SolverConfig) -> MovePlan | None:
-    """Retourne le meilleur coup disponible, ou ``None`` si aucun échange n'est légal."""
+    """Retourne le meilleur coup disponible, ou ``None`` si aucun échange n'est légal.
+
+    ``time_budget_ms`` borne la seconde passe : au-delà, les candidats restants ne
+    sont pas tirés et le meilleur coup déjà évalué est conservé. Cette soupape
+    garantit la latence en production, mais elle rend le choix dépendant de la
+    vitesse de la machine — une valeur nulle ou négative la désactive et donne une
+    recherche complète, parfaitement reproductible.
+    """
     started = time.perf_counter()
     ranked = rank_moves(board, config)
     if not ranked:
@@ -158,14 +165,16 @@ def best_move(board: Board, config: SolverConfig) -> MovePlan | None:
         score, a, b, combo, label, result = top[0]
         return _build_plan(board, config, a, b, score, score, combo, label, result, result)
 
-    deadline = started + max(0.01, config.time_budget_ms / 1000.0)
+    deadline = None
+    if config.time_budget_ms > 0:
+        deadline = started + max(0.01, config.time_budget_ms / 1000.0)
     master = random.Random(config.random_seed)
 
     best: tuple[float, int, int, bool, str, SimulationResult, SimulationResult] | None = None
     rows_denominator = max(1, board.rows - 1)
 
     for deterministic_score, a, b, combo, label, result in top:
-        if best is not None and time.perf_counter() > deadline:
+        if deadline is not None and best is not None and time.perf_counter() > deadline:
             break
         blended, expected = evaluate_playouts(board, a, b, config, master, deterministic_score)
         position = config.position_bias * (
