@@ -12,7 +12,7 @@ cd bot-engine
 python3 -m venv .venv
 source .venv/bin/activate
 pip install -r requirements-dev.txt      # moteur + pytest + httpx
-python -m pytest tests                   # 117 tests, ~13 s
+python -m pytest tests                   # 119 tests, ~15 s
 ```
 
 Python 3.11 ou 3.12. `opencv-python-headless` suffit : aucune dépendance à X11,

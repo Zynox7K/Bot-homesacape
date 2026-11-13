@@ -18,6 +18,7 @@ import android.os.Looper
 import android.os.PowerManager
 import android.os.SystemClock
 import android.provider.Settings
+import android.util.Log
 import android.view.Gravity
 import android.view.WindowManager
 import dev.zynox.autoplay.overlay.BubbleView
@@ -159,6 +160,7 @@ class FloatingOverlayService : Service(), BubbleView.Callbacks {
             bubbleParams = params
             true
         } catch (error: RuntimeException) {
+            Log.e(TAG, "superposition impossible", error)
             RuntimeBus.log(getString(R.string.log_overlay_failed, describeError(error)), LogLevel.ERROR)
             false
         }
@@ -281,6 +283,7 @@ class FloatingOverlayService : Service(), BubbleView.Callbacks {
         level: LogLevel = LogLevel.ERROR,
         state: BotState = BotState.ERROR,
     ) {
+        Log.w(TAG, message)
         RuntimeBus.log(message, level)
         RuntimeBus.update { it.copy(state = state, message = message) }
         syncBubble()
@@ -663,6 +666,7 @@ class FloatingOverlayService : Service(), BubbleView.Callbacks {
         const val ACTION_START = "dev.zynox.autoplay.action.START"
         const val ACTION_STOP = "dev.zynox.autoplay.action.STOP"
 
+        private const val TAG = "AutoPlay.Pilot"
         private const val CHANNEL_ID = "autoplay_pilotage"
         private const val NOTIFICATION_ID = 4211
         private const val REQUEST_OPEN = 10

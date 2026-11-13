@@ -12,14 +12,14 @@ import numpy as np
 import pytest
 
 from engine.config import EngineConfig
-from engine.model import BLOCK, HOLE, color_of
+from engine.model import BLOCK, HOLE, KIND_BOMB, KIND_PLANE, color_of, is_special
 from engine.service import AnalysisRequest, Engine
 from engine.solver.board import Board
 from engine.solver.matching import find_runs, has_match, swap_candidates
 from engine.solver.search import apply_swap, rank_moves
 from engine.solver.simulate import resolve
 from helpers import compare_boards
-from synthetic import build_level, degrade
+from synthetic import build_level, degrade, encode_array
 
 
 @pytest.fixture()
@@ -137,6 +137,36 @@ def test_move_targets_blocks_when_they_are_valuable(engine: Engine) -> None:
     assert response.blocks == 6
 
 
+def test_board_values_only_use_known_encodings(engine: Engine) -> None:
+    """Aucun marqueur interne ne sort du moteur.
+
+    Le solveur ne connaît que les trous, les obstacles, les couleurs de la palette
+    et les bonus : toute autre valeur (sentinelle de classification, case non
+    résolue) produirait des échanges fantômes.
+    """
+    cases = (
+        (11, {"rows": 9, "cols": 9, "colors": 5}),
+        (23, {"rows": 9, "cols": 9, "colors": 5, "blocks": ((2, 2), (6, 5)), "holes": ((0, 0),)}),
+        (37, {"rows": 9, "cols": 9, "colors": 6, "specials": ((4, 4, KIND_BOMB), (7, 1, KIND_PLANE))}),
+        (43, {"rows": 7, "cols": 8, "colors": 5, "blocks": ((1, 1), (5, 6)), "holes": ((6, 7),)}),
+    )
+    for seed, options in cases:
+        level = build_level(seed=seed, **options)
+        image = degrade(level.image, brightness=0.72, noise_sigma=5, seed=seed)
+        response = engine.analyze(AnalysisRequest(image=encode_array(image)))
+
+        assert response.ok, response.message
+        palette_size = len(response.palette)
+        assert palette_size > 0
+        for row, values in enumerate(response.board):
+            for col, value in enumerate(values):
+                assert (
+                    value in (HOLE, BLOCK)
+                    or 0 <= value < palette_size
+                    or is_special(value)
+                ), f"graine {seed}, case ({row},{col}) = {value}"
+
+
 def test_stale_detection_flags_an_unchanged_board(engine: Engine) -> None:
     level = build_level(rows=8, cols=8, colors=4, seed=6)
     payload = level.encode(quality=85)
@@ -149,6 +179,15 @@ def test_stale_detection_flags_an_unchanged_board(engine: Engine) -> None:
     assert second.stale is True
     assert second.stale_count == 1
     assert other.stale is False
+
+
+def test_a_decoded_array_is_rejected_with_a_clear_message(engine: Engine) -> None:
+    """Un tableau déjà décodé n'est pas un payload : le message doit le dire."""
+    level = build_level(rows=5, cols=5, colors=3, seed=1)
+    response = engine.analyze(AnalysisRequest(image=level.image))
+
+    assert not response.ok
+    assert "octets" in response.message
 
 
 def test_no_board_returns_a_clear_failure(engine: Engine) -> None:
@@ -241,9 +280,7 @@ def test_pipeline_survives_degraded_captures(engine: Engine) -> None:
         {"blur": 1},
     ):
         image = degrade(level.image, **kwargs)
-        ok, buffer = cv2.imencode(".jpg", image, [int(cv2.IMWRITE_JPEG_QUALITY), 85])
-        assert ok
-        response = engine.analyze(AnalysisRequest(image=buffer.tobytes()))
+        response = engine.analyze(AnalysisRequest(image=encode_array(image)))
         assert response.ok, f"{kwargs} -> {response.message}"
         assert response.grid is not None
         assert (response.grid.rows, response.grid.cols) == (9, 9)

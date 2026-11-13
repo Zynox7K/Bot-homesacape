@@ -57,9 +57,12 @@ class Frame:
 def decode_image(data: bytes) -> np.ndarray:
     """Décode un tampon JPEG/PNG/WebP en BGR uint8.
 
-    Lève ``ValueError`` si l'image est illisible (payload corrompu ou vide).
+    Lève ``ValueError`` si le payload n'est pas un tampon d'octets, s'il est vide
+    ou si le format n'est pas reconnu.
     """
-    if not data:
+    if not isinstance(data, (bytes, bytearray, memoryview)):
+        raise ValueError("payload attendu en octets (JPEG, PNG ou WebP)")
+    if len(data) == 0:
         raise ValueError("image vide")
     buffer = np.frombuffer(data, dtype=np.uint8)
     image = cv2.imdecode(buffer, cv2.IMREAD_COLOR)

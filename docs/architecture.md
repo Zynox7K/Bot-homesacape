@@ -13,7 +13,7 @@ versionné, `bot-engine/config.json`. L'application le récupère via l'API GitH
 l'applique : un `git push` change le comportement du bot sans reconstruire l'APK.
 
 **Aucun code d'approximation.** Pas de fonction simulée, pas de `TODO`, pas de
-branche morte. Chaque étape est testée : 117 tests couvrent la configuration, le
+branche morte. Chaque étape est testée : 119 tests couvrent la configuration, le
 solveur, la vision, le pipeline complet et l'API HTTP.
 
 ## Découpage

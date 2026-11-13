@@ -9,6 +9,7 @@ import android.graphics.Path
 import android.graphics.PointF
 import android.os.Handler
 import android.os.Looper
+import android.util.Log
 import android.view.Display
 import android.view.WindowManager
 import android.view.accessibility.AccessibilityEvent
@@ -92,10 +93,9 @@ class TouchAccessibilityService : AccessibilityService() {
                 }
 
                 override fun onFailure(errorCode: Int) {
-                    RuntimeBus.log(
-                        getString(R.string.log_screenshot_failed, errorCode),
-                        LogLevel.WARNING,
-                    )
+                    val message = getString(R.string.log_screenshot_failed, errorCode)
+                    Log.w(TAG, message)
+                    RuntimeBus.log(message, LogLevel.WARNING)
                     onResult(null)
                 }
             },
@@ -132,13 +132,17 @@ class TouchAccessibilityService : AccessibilityService() {
             object : GestureResultCallback() {
                 override fun onCompleted(description: GestureDescription?) = onResult(true)
 
-                override fun onCancelled(description: GestureDescription?) = onResult(false)
+                override fun onCancelled(description: GestureDescription?) {
+                    Log.w(TAG, "geste annulé par le système")
+                    onResult(false)
+                }
             },
             mainHandler,
         )
     }
 
     companion object {
+        private const val TAG = "AutoPlay.Touch"
         private const val MIN_GESTURE_MS = 40L
         private const val MAX_GESTURE_MS = 3_000L
 

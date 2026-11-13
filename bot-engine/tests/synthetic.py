@@ -326,6 +326,15 @@ def build_position(
     )
 
 
+def encode_array(image: np.ndarray, quality: int = 85) -> bytes:
+    """Encode une image modifiée comme le ferait le client Android (JPEG)."""
+    ok, buffer = cv2.imencode(
+        ".jpg", image, [int(cv2.IMWRITE_JPEG_QUALITY), int(quality)]
+    )
+    assert ok, "encodage impossible"
+    return buffer.tobytes()
+
+
 def degrade(
     image: np.ndarray,
     brightness: float = 1.0,

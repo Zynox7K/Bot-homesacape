@@ -67,7 +67,7 @@ bot-engine/           Moteur Python : FastAPI, OpenCV, solveur match-3
   engine/solver/      board, matching, simulate, search
   engine/api/         API HTTP
   engine/config.py    Configuration versionnée (config.json)
-  tests/              117 tests (unitaires, vision, pipeline complet, API)
+  tests/              119 tests (unitaires, vision, pipeline complet, API)
   tools/              analyze_file.py, capture_template.py
   templates/          Gabarits PNG des bonus (versionnés)
   Dockerfile          Image de déploiement
