@@ -11,7 +11,7 @@ Une application Android native légère, **sans serveur, sans compte GitHub et s
 
 ## Télécharger et installer l'application
 
-Si un fichier APK est fourni avec le dépôt, copiez-le sur le téléphone et touchez-le pour lancer son installation. Android vous demandera de confirmer et pourra demander l'autorisation d'installer des applications depuis votre navigateur ou gestionnaire de fichiers : l'installation ne peut pas être entièrement automatique. Ne téléchargez un APK que depuis une source de confiance.
+Le workflow ajoute le fichier `apk/bot-local.apk` à cette branche après une compilation réussie. Copiez-le sur le téléphone et touchez-le pour lancer son installation. Android vous demandera de confirmer et pourra demander l'autorisation d'installer des applications depuis votre navigateur ou gestionnaire de fichiers : l'installation ne peut pas être entièrement automatique. Ne téléchargez un APK que depuis une source de confiance.
 
 Sinon, après avoir poussé les fichiers sur GitHub, allez dans **Actions > Construire l'APK Android**, ouvrez une exécution réussie et téléchargez l'artefact **bot-local-android-apk**. Décompressez-le pour obtenir `app-debug.apk`. Il peut être nécessaire de vous connecter à GitHub pour télécharger un artefact. C'est un APK **debug** signé par la clé de développement du système de compilation ; un autre APK portant le même identifiant mais signé avec une autre clé ne pourra pas être mis à jour directement sans le désinstaller.
 

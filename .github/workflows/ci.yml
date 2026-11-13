@@ -4,7 +4,7 @@ on:
   pull_request:
   workflow_dispatch:
 permissions:
-  contents: read
+  contents: write
 jobs:
   android:
     runs-on: ubuntu-latest
@@ -14,11 +14,36 @@ jobs:
         with:
           distribution: temurin
           java-version: '17'
-      - uses: android-actions/setup-android@v3
+      # The GitHub-hosted Ubuntu runner comes with the Android SDK installed.
       - uses: gradle/actions/setup-gradle@v4
-      - run: ./gradlew testDebugUnitTest assembleDebug
+      - name: Compiler et tester
+        id: build
         working-directory: android-app
+        shell: bash
+        run: |
+          set +e
+          ./gradlew testDebugUnitTest assembleDebug > "$RUNNER_TEMP/build.log" 2>&1
+          result=$?
+          cat "$RUNNER_TEMP/build.log"
+          echo "status=$result" >> "$GITHUB_OUTPUT"
+          diagnostic=$(grep -E '^e:|^\* What went wrong:|^> |^FAILURE:|^Execution failed|^Could not' "$RUNNER_TEMP/build.log" | head -5 | tr '\n' '|' | cut -c1-230)
+          echo "diagnostic=${diagnostic:-Build OK}" >> "$GITHUB_OUTPUT"
+      - name: 'Résultat : ${{ steps.build.outputs.diagnostic }}'
+        run: exit "${{ steps.build.outputs.status }}"
       - uses: actions/upload-artifact@v4
         with:
           name: bot-local-android-apk
           path: android-app/app/build/outputs/apk/debug/app-debug.apk
+      # Publish the installable debug APK to this session's branch only.
+      - name: Ajouter l'APK à la branche
+        if: github.event_name == 'push' && github.ref == 'refs/heads/arena/e6e68447-bot-homesacape'
+        run: |
+          mkdir -p apk
+          cp android-app/app/build/outputs/apk/debug/app-debug.apk apk/bot-local.apk
+          git config user.name 'github-actions[bot]'
+          git config user.email '41898282+github-actions[bot]@users.noreply.github.com'
+          git add apk/bot-local.apk
+          if ! git diff --cached --quiet; then
+            git commit -m 'Add installable debug APK'
+            git push origin HEAD:arena/e6e68447-bot-homesacape
+          fi
