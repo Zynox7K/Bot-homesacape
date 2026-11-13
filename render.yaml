@@ -1,4 +1,5 @@
-# Déploiement en un clic sur Render (New + → Blueprint → ce dépôt).
+# Déploiement en un clic sur Render : New + → Blueprint → ce dépôt.
+# Le fichier doit rester à la racine : c'est là que Render le cherche.
 # Railway, Fly.io et tout moteur Docker lisent directement bot-engine/Dockerfile.
 services:
   - type: web
