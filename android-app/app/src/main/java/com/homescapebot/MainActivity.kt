@@ -35,7 +35,7 @@ class MainActivity : ComponentActivity() {
                 Column(Modifier.fillMaxSize().verticalScroll(rememberScrollState()).padding(20.dp), verticalArrangement = Arrangement.spacedBy(12.dp)) {
                     Text("Bot local", style = MaterialTheme.typography.headlineMedium)
                     Text("Aucun serveur ni connexion Internet. Les captures et les calculs restent sur le téléphone.")
-                    Text("1. Activez les deux permissions, puis affichez la bulle.\n2. Ouvrez un plateau stable de Homescapes.\n3. Faites un appui long sur la bulle pour calibrer les cases et les couleurs.\n4. Touchez la bulle pour démarrer ou mettre en pause.")
+                    Text("1. Activez les deux permissions, puis affichez la bulle.\n2. Ouvrez un plateau stable de Homescapes.\n3. Touchez la bulle pour démarrer ou mettre en pause. Aucun calibrage manuel n'est nécessaire.")
                     Button(onClick = { startActivity(Intent(Settings.ACTION_ACCESSIBILITY_SETTINGS)) }) {
                         Text(if (TouchAccessibilityService.instance != null) "Accessibilité activée ✓" else "Activer l'accessibilité")
                     }
@@ -48,7 +48,7 @@ class MainActivity : ComponentActivity() {
                             !Settings.canDrawOverlays(this@MainActivity) -> message = "Autorisez la superposition."
                             else -> {
                                 ContextCompat.startForegroundService(this@MainActivity, Intent(this@MainActivity, FloatingOverlayService::class.java))
-                                message = "Bulle affichée. Ouvrez le jeu et maintenez la bulle pour calibrer."
+                                message = "Bulle affichée. Ouvrez le jeu puis touchez la bulle pour démarrer."
                             }
                         }
                     }) { Text("Afficher la bulle") }
@@ -56,8 +56,7 @@ class MainActivity : ComponentActivity() {
                         stopService(Intent(this@MainActivity, FloatingOverlayService::class.java))
                         message = "Bulle arrêtée."
                     }) { Text("Fermer la bulle") }
-                    Text(if (Calibration.load(this@MainActivity) != null) "Calibrage enregistré ✓" else "Pas encore calibré")
-                    Text("Surveillez toujours le bot : les obstacles et bonus peuvent être mal reconnus. Un nouveau niveau peut nécessiter un nouveau calibrage.", style = MaterialTheme.typography.bodySmall)
+                    Text("Surveillez toujours le bot : les obstacles et bonus peuvent être mal reconnus. La reconnaissance automatique ne fonctionne pas sur tous les niveaux.", style = MaterialTheme.typography.bodySmall)
                     if (message.isNotEmpty()) Text(message)
                 }
             }

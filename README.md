@@ -1,23 +1,33 @@
-# Bot local pour Homescapes — Android
+# Bot local Homescapes — reconnaissance automatique expérimentale
 
-Une application Android native légère, **sans serveur, sans compte GitHub et sans permission Internet**. L'application capture l'écran, analyse un petit échantillon de pixels sur chaque case et effectue un glissement avec le service d'accessibilité. La reconnaissance et les calculs sont effectués sur le téléphone, sans OpenCV.
+Application Android 11+ sans serveur et sans permission Internet. Elle analyse les captures sur le téléphone, repère certaines pièces colorées et tente des échanges match-3. Aucune configuration manuelle de la grille n'est demandée.
 
-## Avant de commencer
+## Ce qui fonctionne et ce qui ne fonctionne pas encore
 
-- Android **11 ou supérieur** et la version de Homescapes dont l'identifiant est `com.playrix.homescapes`.
-- La capture, l'analyse et les gestes ont un coût : le **zéro ralentissement n'est pas garanti**. L'application attend 2,5 secondes entre deux cycles et ne traite qu'une capture à la fois.
-- Le solveur est volontairement simple : il cherche un alignement de trois pièces et ne comprend ni les objectifs, ni les bonus, ni tous les obstacles. Une case bloquée peut être prise pour une pièce, surtout si elle a une couleur similaire. Un plateau irrégulier ou de nouvelles animations peuvent empêcher la reconnaissance. **Surveillez toujours le bot** et mettez-le en pause en cas d'erreur. Le comportement sur un appareil et sur un plateau réels doit être vérifié ; il n'est pas garanti pour tous les niveaux.
-- Vérifiez les conditions d'utilisation du jeu : l'automatisation peut entraîner des restrictions de compte.
+- La détection a été développée et testée automatiquement sur **une capture fournie par l'utilisateur**, avec une grille irrégulière. L'application recherche un plateau stable sur deux captures successives et ne tente pas de jouer le même état deux fois.
+- La reconnaissance dépend fortement des couleurs, de l'échelle, de la position et du rendu du jeu. Elle ne reconnaît pas toutes les formes de grille, pièces, bonus, animations ou obstacles ; elle peut se tromper ou rester immobile. Le solveur n'optimise pas les objectifs spécifiques d'un niveau et ne garantit pas de le gagner. Aucun essai sur téléphone réel n'a été effectué ici.
+- **Le passage au niveau suivant n'est pas encore automatisé.** En l'absence de capture vérifiée de l'écran de victoire, le bot ne clique pas au hasard sur les dialogues ou les boutons : ceux-ci pourraient dépenser des pièces ou déclencher un achat. Il se met en pause quand il ne reconnaît pas de plateau ou de coup pendant plusieurs cycles.
+- La capture et l'analyse consomment des ressources ; le zéro ralentissement ne peut pas être garanti. Le bot attend 2,5 secondes entre les cycles.
+- Vérifiez les conditions d'utilisation du jeu ; l'automatisation peut entraîner des restrictions de compte. Ne laissez pas le bot jouer sans surveillance.
 
-## Télécharger et installer l'application
+## Installation de l'APK
 
-Le workflow ajoute le fichier `apk/bot-local.apk` à cette branche après une compilation réussie. Copiez-le sur le téléphone et touchez-le pour lancer son installation. Android vous demandera de confirmer et pourra demander l'autorisation d'installer des applications depuis votre navigateur ou gestionnaire de fichiers : l'installation ne peut pas être entièrement automatique. Ne téléchargez un APK que depuis une source de confiance.
+Sur cette branche, après une compilation GitHub Actions réussie, téléchargez `apk/bot-local.apk`, copiez-le sur le téléphone et touchez-le pour lancer l'installation. Android exige une confirmation ; l'installation n'est pas silencieuse. C'est un APK debug : Play Protect peut émettre un avertissement et Android peut restreindre l'activation de l'accessibilité.
 
-Sinon, après avoir poussé les fichiers sur GitHub, allez dans **Actions > Construire l'APK Android**, ouvrez une exécution réussie et téléchargez l'artefact **bot-local-android-apk**. Décompressez-le pour obtenir `app-debug.apk`. Il peut être nécessaire de vous connecter à GitHub pour télécharger un artefact. C'est un APK **debug** signé par la clé de développement du système de compilation ; un autre APK portant le même identifiant mais signé avec une autre clé ne pourra pas être mis à jour directement sans le désinstaller.
+**Mise à jour de l'ancienne version :** l'APK généré par GitHub Actions utilise une clé debug propre à l'environnement de compilation. Si Android indique que la signature ne correspond pas, désinstallez d'abord l'ancienne version, puis installez la nouvelle et réactivez les permissions. Cette désinstallation efface les préférences de l'application, mais pas les données de Homescapes.
 
-### Construire soi-même
+## Utilisation
 
-Ouvrez `android-app/` dans Android Studio avec JDK 17 et le SDK Android 35, puis utilisez **Build > Build APK(s)**. Ou lancez :
+1. Ouvrez **Bot local**, activez l'accessibilité et autorisez la superposition via les boutons. Si Android signale des paramètres restreints, l'option **Autoriser les paramètres restreints** peut se trouver dans les informations de l'application, menu ⋮. Accordez l'accessibilité uniquement si vous faites confiance à l'APK : elle permet de lire la fenêtre active et de simuler des gestes.
+2. Appuyez sur **Afficher la bulle**, ouvrez Homescapes et un plateau stable, puis touchez **▶**. Aucun calibrage n'est requis. L'analyse attend deux captures cohérentes avant de tenter un coup. La bulle affiche **Ⅱ** pendant la lecture ; touchez-la pour mettre en pause.
+3. Surveillez les premiers coups. La détection ne reconnaît pas tous les obstacles ; arrêtez le bot s'il se trompe. S'il s'arrête avec « Plateau ou coup non reconnu », ne le relancez pas sans vérifier l'écran.
+4. Utilisez **Fermer la bulle** dans l'application ou l'action **Arrêter** de sa notification. Un geste déjà envoyé au système peut se terminer après la pause. Désactivez les permissions dans les paramètres Android lorsqu'elles ne sont plus nécessaires.
+
+Le service vérifie que l'application active est Homescapes avant capture et geste. Les captures restent en mémoire et ne sont pas envoyées sur Internet. Une transition peut toutefois apparaître dans une capture ; ne laissez pas le bot actif sur un écran sensible.
+
+## Construire et tester
+
+Ouvrez `android-app/` dans Android Studio avec JDK 17 et le SDK Android 35, ou exécutez :
 
 ```bash
 cd android-app
@@ -25,20 +35,4 @@ cd android-app
 # Windows : gradlew.bat testDebugUnitTest assembleDebug
 ```
 
-Le résultat est `android-app/app/build/outputs/apk/debug/app-debug.apk`. La construction nécessite l'accès aux dépôts Gradle et Google. Les tests automatisés couvrent le solveur et la classification sur des données synthétiques, pas l'expérience de jeu réelle.
-
-## Activer et calibrer
-
-1. Ouvrez **Bot local**. Appuyez sur **Activer l'accessibilité**, sélectionnez le service du bot et activez-le. Puis revenez et appuyez sur **Autoriser la superposition**. Certains appareils Android bloquent l'accessibilité pour les applications installées par APK : dans les informations de l'application, utilisez le menu à trois points puis **Autoriser les paramètres restreints**, si cette option est proposée.
-2. Appuyez sur **Afficher la bulle**. Ouvrez Homescapes et un plateau **stable et rectangulaire**. Vous pouvez déplacer la bulle en la faisant glisser.
-3. Faites un **appui long** sur la bulle pour ouvrir le calibrage. La capture reste uniquement en mémoire sur votre téléphone. Choisissez le nombre de lignes et colonnes, touchez le **centre** de la case en haut à gauche puis celui de la case en bas à droite. Vérifiez que les traits correspondent à la grille.
-4. Touchez une pièce représentative de **chaque couleur différente**, au moins trois. Chaque couleur reçoit un numéro. Vérifiez sur toute la grille que chaque couleur porte le même numéro et que les cases incertaines sont marquées `?`. Si ce n'est pas correct, appuyez sur **Recommencer** et essayez une autre capture stable. Si la reconnaissance reste fausse, n'utilisez pas le bot sur ce plateau.
-5. Appuyez sur **Enregistrer** pour revenir au jeu. Touchez brièvement la bulle pour **démarrer ou mettre en pause**. Recalibrez chaque fois que la grille, sa taille ou son apparence change. Si l'écran change de résolution ou d'orientation, le bot s'arrête et demande un nouveau calibrage.
-6. Utilisez **Fermer la bulle** dans l'application pour arrêter le service, ou son action **Arrêter** dans la notification si Android l'affiche. Pour désactiver complètement l'accès, retirez les deux permissions dans les paramètres Android.
-
-L'application vérifie que le jeu est actif avant de capturer et avant de jouer. Pendant une pause, aucun nouveau geste n'est envoyé ; un geste déjà transmis à Android peut toutefois se terminer. Une capture peut contenir une transition d'écran et l'accessibilité donne accès au contenu de la fenêtre active : ne laissez pas le bot actif sur un écran sensible.
-
-## Structure
-
-- `android-app/` : code Kotlin, interface Compose, calibrage, solveur local et tests.
-- `.github/workflows/ci.yml` : tests et construction de l'APK sur GitHub Actions. Aucun déploiement de serveur n'est nécessaire.
+L'APK est produit dans `android-app/app/build/outputs/apk/debug/app-debug.apk`. Le workflow `.github/workflows/ci.yml` exécute les tests et construit l'APK sur GitHub Actions. Il publie l'APK sur la branche `arena/f301f018-bot-homesacape` après une exécution réussie. Les tests comprennent une capture réelle du plateau et des données synthétiques ; ils ne remplacent pas un test sur appareil.

@@ -52,7 +52,7 @@ jobs:
           path: android-app/app/build/outputs/apk/debug/app-debug.apk
       # Publish the installable debug APK to this session's branch only.
       - name: Ajouter l'APK à la branche
-        if: github.event_name == 'push' && github.ref == 'refs/heads/arena/e6e68447-bot-homesacape'
+        if: github.event_name == 'push' && github.ref == 'refs/heads/arena/f301f018-bot-homesacape'
         run: |
           mkdir -p apk
           cp android-app/app/build/outputs/apk/debug/app-debug.apk apk/bot-local.apk
@@ -61,5 +61,5 @@ jobs:
           git add apk/bot-local.apk
           if ! git diff --cached --quiet; then
             git commit -m 'Add installable debug APK'
-            git push origin HEAD:arena/e6e68447-bot-homesacape
+            git push origin HEAD:arena/f301f018-bot-homesacape
           fi

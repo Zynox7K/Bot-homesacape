@@ -6,6 +6,7 @@ import android.app.PendingIntent
 import android.app.Service
 import android.content.Intent
 import android.graphics.Color
+import android.graphics.Bitmap
 import android.graphics.PixelFormat
 import android.graphics.drawable.GradientDrawable
 import android.os.IBinder
@@ -28,7 +29,6 @@ class FloatingOverlayService : Service() {
     private var bubble: TextView? = null
     private var playing = false
     private var job: Job? = null
-    private var calibrating = false
     private val channel = "bot_control"
 
     override fun onCreate() {
@@ -39,7 +39,7 @@ class FloatingOverlayService : Service() {
         val open = PendingIntent.getActivity(this, 0, Intent(this, MainActivity::class.java), PendingIntent.FLAG_IMMUTABLE or PendingIntent.FLAG_UPDATE_CURRENT)
         val notification = NotificationCompat.Builder(this, channel)
             .setSmallIcon(android.R.drawable.ic_media_play).setContentTitle("Bot local actif")
-            .setContentText("Appui : lecture/pause. Appui long : calibrer.").setContentIntent(open)
+            .setContentText("Appui sur la bulle : lecture/pause.").setContentIntent(open)
             .addAction(android.R.drawable.ic_menu_close_clear_cancel, "Arrêter", stop).setOngoing(true).build()
         startForeground(1, notification)
         if (!Settings.canDrawOverlays(this)) { stopSelf(); return }
@@ -51,7 +51,7 @@ class FloatingOverlayService : Service() {
         }
         val view = TextView(this).apply {
             text = "▶"; textSize = 26f; gravity = Gravity.CENTER; setTextColor(Color.WHITE)
-            contentDescription = "Appuyer pour démarrer ou mettre en pause ; maintenir pour calibrer"
+            contentDescription = "Appuyer pour démarrer ou mettre en pause"
             background = GradientDrawable().apply { shape = GradientDrawable.OVAL; setColor(0xBB202A44.toInt()); setStroke(2, Color.WHITE) }
         }
         var downX = 0f; var downY = 0f; var startX = 0; var startY = 0
@@ -62,7 +62,7 @@ class FloatingOverlayService : Service() {
                 MotionEvent.ACTION_MOVE -> { params.x = startX + (event.rawX - downX).toInt(); params.y = startY + (event.rawY - downY).toInt(); manager.updateViewLayout(view, params); true }
                 MotionEvent.ACTION_UP -> {
                     if (abs(event.rawX - downX) < slop && abs(event.rawY - downY) < slop) {
-                        if (event.eventTime - event.downTime >= 650) calibrate() else toggle()
+                        toggle()
                     }
                     true
                 }
@@ -77,51 +77,17 @@ class FloatingOverlayService : Service() {
         return START_NOT_STICKY
     }
 
-    private fun calibrate() {
-        if (playing || job != null) { toast("Mettez le bot en pause avant de calibrer."); return }
-        if (calibrating) return
-        val service = TouchAccessibilityService.instance
-        if (service == null || !service.gameIsActive()) { toast("Ouvrez d'abord le plateau Homescapes."); return }
-        calibrating = true
-        scope.launch {
-            var launched = false
-            try {
-                bubble?.visibility = View.INVISIBLE
-                delay(150)
-                val bitmap = service.capture()
-                if (bitmap == null) { toast("Capture indisponible. Réessayez."); return@launch }
-                if (!service.gameIsActive()) { bitmap.recycle(); toast("Retournez sur le jeu."); return@launch }
-                CalibrationSession.screenshot?.recycle()
-                CalibrationSession.screenshot = bitmap
-                // Android 15 requires the overlay to be visible when starting an activity from the background.
-                bubble?.visibility = View.VISIBLE
-                try {
-                    startActivity(Intent(this@FloatingOverlayService, CalibrationActivity::class.java).addFlags(Intent.FLAG_ACTIVITY_NEW_TASK))
-                    bubble?.visibility = View.INVISIBLE
-                    launched = true
-                } catch (e: Exception) {
-                    CalibrationSession.screenshot?.recycle(); CalibrationSession.screenshot = null
-                    toast("Impossible d'ouvrir le calibrage : ${e.message ?: "erreur"}")
-                }
-            } finally {
-                calibrating = false
-                if (!launched) bubble?.visibility = View.VISIBLE
-            }
-        }
-    }
-
-    fun showBubble() { bubble?.visibility = View.VISIBLE }
-
     private fun toggle() {
         if (playing) { pause(); return }
-        if (job != null || calibrating) { toast("Attendez la fin de l'opération en cours."); return }
+        if (job != null) { toast("Attendez la fin de l'opération en cours."); return }
         val service = TouchAccessibilityService.instance
         if (service == null || !service.gameIsActive()) { toast("Ouvrez d'abord le plateau Homescapes."); return }
-        val config = Calibration.load(this)
-        if (config == null) { toast("Maintenez la bulle pour calibrer le plateau."); return }
         playing = true; bubble?.text = "Ⅱ"
         job = scope.launch(start = CoroutineStart.LAZY) {
             try {
+                var previous: AutoBoardDetector.Board? = null
+                var lastAttempt: AutoBoardDetector.Board? = null
+                var stalled = 0
                 while (isActive && playing) {
                     if (TouchAccessibilityService.instance !== service || !service.gameIsActive()) { toast("Ouvrez Homescapes avant de lancer le bot."); break }
                     bubble?.visibility = View.INVISIBLE
@@ -132,12 +98,27 @@ class FloatingOverlayService : Service() {
                     try {
                         if (!service.gameIsActive()) break
                         val width = bitmap.width; val height = bitmap.height
-                        val move = withContext(Dispatchers.Default) { LocalEngine.analyze(bitmap, config) }
+                        val board = withContext(Dispatchers.Default) { detectBoard(bitmap) }
                         ensureActive()
                         if (SystemClock.elapsedRealtime() - captureStarted > 5000) { toast("Analyse trop lente, bot arrêté."); break }
-                        if (move != null && playing && service.gameIsActive()) {
-                            if (!service.swipe(move, width, height)) { toast("Geste refusé ou écran modifié."); break }
+                        if (board == null) {
+                            previous = null
+                            stalled++
+                        } else if (previous != null && board.samePosition(previous)) {
+                            val move = board.move()
+                            if (move == null || (lastAttempt != null && board.samePosition(lastAttempt))) {
+                                stalled++
+                            } else if (playing && service.gameIsActive()) {
+                                if (!service.swipe(move, width, height)) { toast("Geste refusé ou écran modifié."); break }
+                                lastAttempt = board
+                                stalled = 0
+                            }
+                            previous = board
+                        } else {
+                            previous = board
                         }
+                        // Do not tap unrecognized screens: they might contain purchases or account dialogs.
+                        if (stalled >= 6) { toast("Plateau ou coup non reconnu. Bot en pause."); break }
                     } finally { bitmap.recycle() }
                     delay(2500)
                 }
@@ -152,6 +133,18 @@ class FloatingOverlayService : Service() {
         }
         job?.start()
     }
+    private fun detectBoard(bitmap: Bitmap): AutoBoardDetector.Board? {
+        val ratio = 480f / maxOf(bitmap.width, bitmap.height)
+        val width = (bitmap.width * ratio).toInt().coerceAtLeast(1)
+        val height = (bitmap.height * ratio).toInt().coerceAtLeast(1)
+        val scaled = Bitmap.createScaledBitmap(bitmap, width, height, false)
+        try {
+            val pixels = IntArray(width * height)
+            scaled.getPixels(pixels, 0, width, 0, 0, width, height)
+            return AutoBoardDetector.detect(pixels, width, height)
+        } finally { if (scaled !== bitmap) scaled.recycle() }
+    }
+
     private fun pause() { playing = false; job?.cancel(); bubble?.text = "▶" }
     private fun toast(text: String) { Toast.makeText(this, text, Toast.LENGTH_LONG).show() }
     override fun onDestroy() {
