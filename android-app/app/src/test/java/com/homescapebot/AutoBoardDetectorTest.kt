@@ -3,17 +3,18 @@ package com.homescapebot
 import org.junit.Assert.*
 import org.junit.Test
 import java.io.File
-import javax.imageio.ImageIO
 
 class AutoBoardDetectorTest {
     @Test fun userScreenshotFindsPiecesAndAnAdjacentMatch() {
         val root = generateSequence(File(System.getProperty("user.dir")).absoluteFile) { it.parentFile }
-            .firstOrNull { File(it, "Screenshot_20261114-092352~2.jpg").isFile }
-        assertNotNull("The user-provided screenshot must be present in the repository", root)
-        val image = ImageIO.read(File(root!!, "Screenshot_20261114-092352~2.jpg"))
-        val step = maxOf(image.width, image.height) / 480
-        val width = image.width / step; val height = image.height / step
-        val pixels = IntArray(width * height) { i -> image.getRGB((i % width) * step, (i / width) * step) }
+            .firstOrNull { File(it, "android-app/app/src/test/resources/user-board-480x300.rgb").isFile }
+        assertNotNull("The test frame derived from the user screenshot must be present", root)
+        val bytes = File(root!!, "android-app/app/src/test/resources/user-board-480x300.rgb").readBytes()
+        val width = 480; val height = 300
+        assertEquals(width * height * 3, bytes.size)
+        val pixels = IntArray(width * height) { i ->
+            ((bytes[i * 3].toInt() and 255) shl 16) or ((bytes[i * 3 + 1].toInt() and 255) shl 8) or (bytes[i * 3 + 2].toInt() and 255)
+        }
         val board = AutoBoardDetector.detect(pixels, width, height)
         assertNotNull("The screenshot board should be detected without manual calibration", board)
         assertTrue("Recognize at least 15 tiles", board!!.cells.sumOf { row -> row.count { it != null } } >= 15)
